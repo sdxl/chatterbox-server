@@ -33,11 +33,12 @@ exports.requestHandler = function(request, response) {
   // console.logs in your code.
   console.log("Serving request type " + request.method + " for url " + request.url);
 
-  if(request.url === '/classes/messages' || request.url === '/classes/room1'){
-    if ( request.method === "GET" ) {
-      response.writeHead(200, "OK", {'Content-Type': 'application/json'});
-      response.end(JSON.stringify(_chatStorage));
-    }
+  var endPointArr = request.url.split('/');
+  var classFound = endPointArr[endPointArr.length - 2] === 'classes' ? true : false ;
+  // var endPoint = endPointArr[endPointArr.length - 1];
+
+
+  if(classFound){
 
     if(request.method === "POST"){
       console.log("[200] " + request.method + " to " + request.url);
@@ -49,19 +50,37 @@ exports.requestHandler = function(request, response) {
       });
 
       request.on('end', function() {
-        response.writeHead(201, "OK", {'Content-Type': 'application/json'});
+        response.writeHead(201, "OK", {'Content-Type': 'application/json',
+                                       "access-control-allow-origin": "*",
+                                       "access-control-allow-methods": "GET, POST, PUT, DELETE, OPTIONS",
+                                       "access-control-allow-headers": "content-type, accept",
+                                       "access-control-max-age": 10});
+        //filter response object
         response.end(JSON.stringify(_chatStorage));
       });
-
-      // console.log(JSON.parse(request.headers.data).username);
     }
+
+    if ( request.method === "GET" ) {
+      response.writeHead(200, "OK", {'Content-Type': 'application/json',
+                                     "access-control-allow-origin": "*",
+                                     "access-control-allow-methods": "GET, POST, PUT, DELETE, OPTIONS",
+                                     "access-control-allow-headers": "content-type, accept",
+                                     "access-control-max-age": 10});
+      //filter response object
+      response.end(JSON.stringify(_chatStorage));
+    }
+
     else{
       //send back error message message
     }
   }
   else{
     //wrong url, send back 404;
-      response.writeHead(404, "Bad Url", {'Content-Type': 'text/plain'});
+      response.writeHead(404, "Bad Url", {'Content-Type': 'text/plain',
+                                          "access-control-allow-origin": "*",
+                                          "access-control-allow-methods": "GET, POST, PUT, DELETE, OPTIONS",
+                                          "access-control-allow-headers": "content-type, accept",
+                                          "access-control-max-age": 10});
       response.end();
   }
 
@@ -91,6 +110,12 @@ exports.requestHandler = function(request, response) {
   // response.end('{"Hello, World!"}');s
 };
 
+var defaultCorsHeaders = {
+  "access-control-allow-origin": "*",
+  "access-control-allow-methods": "GET, POST, PUT, DELETE, OPTIONS",
+  "access-control-allow-headers": "content-type, accept",
+  "access-control-max-age": 10 // Seconds.
+};
 // These headers will allow Cross-Origin Resource Sharing (CORS).
 // This code allows this server to talk to websites that
 // are on different domains, for instance, your chat client.
@@ -100,10 +125,5 @@ exports.requestHandler = function(request, response) {
 //
 // Another way to get around this restriction is to serve you chat
 // client from this domain by setting up static file serving.
-var defaultCorsHeaders = {
-  "access-control-allow-origin": "*",
-  "access-control-allow-methods": "GET, POST, PUT, DELETE, OPTIONS",
-  "access-control-allow-headers": "content-type, accept",
-  "access-control-max-age": 10 // Seconds.
-};
+
 
